@@ -20,6 +20,8 @@ import requests
 import subprocess
 import threading
 import hmac
+import ipaddress
+import tempfile
 from functools import wraps
 import numpy as np
 from pathlib import Path
@@ -547,6 +549,70 @@ def health():
         "rmvpe_f0": True,
         "rms_adaptive_mix": True,
     }
+
+
+@app.post("/admin/settings")
+@serialized
+def update_service_settings(changes: dict):
+    """显式保存服务设置；只有配置了令牌的服务允许此操作。"""
+    if not API_TOKEN:
+        raise HTTPException(status_code=403, detail="请先在推理服务端设置访问令牌并重启")
+    env_names = {
+        "host": "SING_HOST", "port": "SING_PORT", "rvc_model": "SING_RVC_MODEL",
+        "rvc_index": "SING_RVC_INDEX", "uvr_model": "SING_UVR5_MODEL",
+        "uvr_tools_dir": "UVR5_TOOLS_DIR",
+    }
+    if not changes or any(key not in env_names for key in changes):
+        raise HTTPException(status_code=400, detail="没有可用设置，或包含不支持的设置")
+    if any(env_names[key] in os.environ for key in changes):
+        raise HTTPException(status_code=409, detail="该设置由环境变量覆盖，请在 GPU 电脑修改环境变量")
+    for key, value in changes.items():
+        if key == "port":
+            if isinstance(value, bool) or not isinstance(value, int) or not 1 <= value <= 65535:
+                raise HTTPException(status_code=400, detail="端口必须为 1 到 65535 的整数")
+        elif not isinstance(value, str) or "\x00" in value or len(value) > 4096:
+            raise HTTPException(status_code=400, detail="配置值无效")
+        elif key == "host":
+            try:
+                if value != "localhost":
+                    ipaddress.ip_address(value)
+            except ValueError:
+                raise HTTPException(status_code=400, detail="监听地址必须是 IP 地址或 localhost")
+        elif key == "uvr_tools_dir":
+            if not value or not os.path.isfile(os.path.join(setting_path_for_admin(value), "vr.py")):
+                raise HTTPException(status_code=400, detail="UVR5 代码目录必须包含 vr.py")
+        elif key in ("rvc_model", "uvr_model", "rvc_index"):
+            if not value and key == "rvc_index":
+                continue
+            if not value or not os.path.isfile(setting_path_for_admin(value)):
+                raise HTTPException(status_code=400, detail=f"{key} 文件不存在于 GPU 电脑")
+    try:
+        if os.path.exists(SETTINGS_PATH):
+            with open(SETTINGS_PATH, "r", encoding="utf-8-sig") as f:
+                settings = json.load(f)
+            if not isinstance(settings, dict):
+                raise ValueError("设置文件不是 JSON 对象")
+        else:
+            settings = {}
+        settings.update(changes)
+        temp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=BASE_DIR,
+                                             prefix=".settings-", suffix=".tmp", delete=False) as f:
+                temp_path = f.name
+                json.dump(settings, f, ensure_ascii=False, indent=2)
+                f.write("\n")
+            os.replace(temp_path, SETTINGS_PATH)
+        finally:
+            if temp_path and os.path.exists(temp_path):
+                os.unlink(temp_path)
+    except (OSError, ValueError) as exc:
+        raise HTTPException(status_code=500, detail=f"保存配置失败：{type(exc).__name__}")
+    return {"status": "saved", "restart_required": True}
+
+
+def setting_path_for_admin(value):
+    return os.path.normpath(os.path.join(BASE_DIR, value))
 
 
 if __name__ == "__main__":

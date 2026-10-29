@@ -19,6 +19,7 @@ import aiohttp
 from typing import Any, Dict, Optional, Tuple
 
 from maibot_sdk import MaiBotPlugin, Command, Tool
+from maibot_sdk.config_widgets import ConfigWidget, ConfigWidgetState
 from maibot_sdk.types import ToolParameterInfo, ToolParamType
 from .config import SingingPluginConfig
 
@@ -127,11 +128,18 @@ class ElysiaSingPlugin(MaiBotPlugin):
     """爱莉希雅 AI 唱歌插件。"""
 
     config_model = SingingPluginConfig
+    config_widgets = [
+        ConfigWidget(id="remote_config_status", kind="status", label="推理服务配置状态"),
+        ConfigWidget(id="remote_config_apply", kind="action", label="应用推理服务配置",
+                     confirmation="将已保存的非空配置写入推理服务；服务需重启后生效。是否继续？"),
+    ]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self._session: Optional[aiohttp.ClientSession] = None
         self._cleanup_tasks: set = set()
+        self._remote_config_result = "尚未提交推理服务配置。"
+        self._remote_config_tone = "neutral"
         # 记录每个会话最后一次点播的歌词/歌名与参数字典
         self._last_song: Dict[str, Tuple[str, Dict[str, Any]]] = {}
 
@@ -155,6 +163,64 @@ class ElysiaSingPlugin(MaiBotPlugin):
             await self._session.close()
         timeout = aiohttp.ClientTimeout(total=self.config.singing.timeout)
         self._session = aiohttp.ClientSession(timeout=timeout)
+
+    async def get_config_widget_state(self) -> Dict[str, ConfigWidgetState]:
+        return {
+            "remote_config_status": ConfigWidgetState(text=self._remote_config_result, tone=self._remote_config_tone),
+            "remote_config_apply": ConfigWidgetState(),
+        }
+
+    async def on_config_widget_action(self, action_id: str) -> None:
+        if action_id != "remote_config_apply":
+            raise ValueError("未知操作")
+        await self._apply_remote_settings(self.config.remote_server)
+
+    async def _apply_remote_settings(self, remote: Any) -> None:
+        """只在 WebUI 显式触发时向新服务提交配置。"""
+        self._remote_config_tone = "error"
+        if not self.config.singing.server_token:
+            self._remote_config_result = "未提交：请先在推理服务和插件两端配置相同的服务令牌。"
+        elif remote.clear_rvc_index and remote.rvc_index:
+            self._remote_config_result = "未提交：不能同时填写新索引并开启清除索引。"
+        else:
+            changes = {key: getattr(remote, key) for key in
+                       ("rvc_model", "rvc_index", "uvr_model", "uvr_tools_dir", "host", "port")
+                       if getattr(remote, key)}
+            if remote.clear_rvc_index:
+                changes["rvc_index"] = ""
+            if not changes:
+                self._remote_config_result = "未提交：没有填写要修改的推理服务配置。"
+            else:
+                try:
+                    url = self.config.singing.server_url.rstrip("/") + "/admin/settings"
+                    async with self._session.post(url, json=changes, headers=self._headers(),
+                                                  timeout=aiohttp.ClientTimeout(total=6)) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            self._remote_config_result = (
+                                "推理服务配置已保存，请在 GPU 电脑重启推理服务；"
+                                "如修改了地址或端口，还需同步修改插件的唱歌服务地址。"
+                                if data.get("status") == "saved" else "推理服务返回异常，请检查服务日志。"
+                            )
+                            if data.get("status") == "saved":
+                                self._remote_config_tone = "success"
+                        elif response.status == 404:
+                            self._remote_config_result = "推理服务不支持远程配置；旧服务未被修改，请先升级并验证服务。"
+                        else:
+                            data = await response.json(content_type=None)
+                            self._remote_config_result = f"推理服务未保存配置（HTTP {response.status}）：{data.get('detail', '请检查服务日志')}"
+                except Exception as exc:
+                    logger.warning("[ElysiaSing] 推理服务配置提交失败: %s", type(exc).__name__)
+                    self._remote_config_result = "无法提交推理服务配置，请检查服务地址、令牌和网络。"
+        logger.info("[ElysiaSing] %s", self._remote_config_result)
+
+    @Command("sing_config_status", description="查看最近一次推理服务配置提交结果",
+             pattern=r"^/(?:sing_config_status|唱歌配置状态)$")
+    async def handle_config_status(self, stream_id: str = "", **kwargs: Any) -> Tuple[bool, str, bool]:
+        if not stream_id:
+            return False, "缺少 stream_id", True
+        await self.ctx.send.text(self._remote_config_result, stream_id)
+        return True, self._remote_config_result, True
 
     def _audio_dir(self) -> str:
         return self.config.singing.audio_output_dir or str(self.ctx.paths.runtime_dir)

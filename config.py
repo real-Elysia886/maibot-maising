@@ -197,12 +197,34 @@ class AcousticTuningConfig(PluginConfigBase):
     )
 
 
+class RemoteServerSettings(PluginConfigBase):
+    """需要服务端配合并重启后生效的设置。"""
+
+    __ui_label__ = "推理服务配置"
+    __ui_icon__ = "server"
+    __ui_order__ = 3
+
+    rvc_model: str = Field(default="", description="GPU 电脑上的 RVC v2 模型路径；留空不修改",
+        json_schema_extra={"label": "RVC 音色模型", "hint": "填写 GPU 电脑上已有的 .pth 文件路径；留空不修改。保存到服务端后需重启推理服务。"})
+    rvc_index: str = Field(default="", description="GPU 电脑上的 RVC 索引路径；留空不修改",
+        json_schema_extra={"label": "RVC 索引", "hint": "填写与模型配套的 .index 路径；留空不修改。想移除索引请开启下方清除开关。"})
+    clear_rvc_index: bool = Field(default=False, description="清除已配置的 RVC 索引",
+        json_schema_extra={"label": "清除 RVC 索引", "hint": "开启后会清空服务端的索引路径；不能同时填写新索引。"})
+    uvr_model: str = Field(default="", description="GPU 电脑上的 UVR5 模型路径；留空不修改",
+        json_schema_extra={"label": "UVR5 分离模型", "hint": "仅在更换人声分离模型时填写 GPU 电脑的文件路径；留空不修改。"})
+    uvr_tools_dir: str = Field(default="", description="GPU 电脑上的 UVR5 代码目录；留空不修改",
+        json_schema_extra={"label": "UVR5 代码目录", "hint": "填写包含 vr.py 的 GPU 电脑目录；一般由安装器自动配置，留空不修改。"})
+    host: str = Field(default="", description="服务监听地址；留空不修改",
+        json_schema_extra={"label": "推理服务监听地址", "hint": "同机可用 127.0.0.1；跨机器填 GPU 电脑的可达地址。修改错误可能导致重启后无法连接。"})
+    port: int = Field(default=0, ge=0, le=65535, description="服务监听端口；0 表示不修改",
+        json_schema_extra={"label": "推理服务监听端口", "hint": "填 1–65535；0 表示不修改。重启后还需将“唱歌服务地址”中的端口改成相同值。"})
+
 class InteractionConfig(PluginConfigBase):
     """聊天交互与功能开关。"""
 
     __ui_label__ = "交互与功能"
     __ui_icon__ = "music"
-    __ui_order__ = 3
+    __ui_order__ = 4
 
     send_song_card: bool = Field(
         default=True,
@@ -240,5 +262,6 @@ class SingingPluginConfig(PluginConfigBase):
 
     plugin: PluginSectionConfig = Field(default_factory=PluginSectionConfig)
     singing: SingServerConfig = Field(default_factory=SingServerConfig)
+    remote_server: RemoteServerSettings = Field(default_factory=RemoteServerSettings)
     acoustic: AcousticTuningConfig = Field(default_factory=AcousticTuningConfig)
     interaction: InteractionConfig = Field(default_factory=InteractionConfig)
