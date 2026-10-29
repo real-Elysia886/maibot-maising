@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""爱莉希雅 AI 唱歌插件（MaiBot SDK 2.x）
+"""MaiSing · 麦麦想唱歌（MaiBot SDK 2.x）
 
 功能与管理特性：
 - WebUI 界面可视化调音配置与参数原理说明（支持热更新）
@@ -25,17 +25,17 @@ from .config import SingingPluginConfig
 
 logger = logging.getLogger("plugin.elysia_sing")
 
-PARAM_HELP_TEXT = """🎛️【爱莉希雅调音台 · 自然语言参数指南】
+PARAM_HELP_TEXT = """🎛️【MaiSing 调音台 · 参数指南】
 您可以在「/唱」或「/重唱」后面自由追加调音参数，就像在专业录音棚调音一样：
 
 1️⃣ 变调 (pitch / 音调)
 • 取值范围：-12 到 +12 个半音（默认基准：男声+8，女声0）
-• 原理解析：爱莉希雅是轻柔元气女高音。男歌手（周杰伦、陈奕迅等）音域偏低，默认设置专属「+8」升调，在保留旋律辨识度的同时完美契合爱莉希雅甜美声线；女声歌曲保持「0」即可享受自然抒情原调。底层已接入 RMVPE 物理基频神经网络实时分析，也可手动强制指定。
+• 原理解析：默认备用变调为 +8 半音；音高检测成功时会根据音源自动调整，也可手动指定。不同音色模型适合的变调可能不同。
 • 常用示例：/重唱 +8  或  /唱 晴天 变调=+8  或  /重唱 0
 
 2️⃣ 相似度 (index / 音色)
 • 取值范围：0.0 ~ 1.0（默认 0.40，推荐 0.35 ~ 0.50）
-• 原理解析：控制歌声“有多像爱莉希雅原声”。调高（0.6~0.8）音色特征最浓；调低（0.2~0.4）长音转音极度丝滑平整、宛如官方单曲。
+• 原理解析：控制 RVC 索引特征的占比，效果取决于模型和音源，可通过试听调整。
 • 常用示例：/重唱 相似度=0.45
 
 3️⃣ 咬字保护 (protect / 呼吸)
@@ -50,7 +50,7 @@ PARAM_HELP_TEXT = """🎛️【爱莉希雅调音台 · 自然语言参数指南
 
 5️⃣ 动态融合 (rms / 响度)
 • 取值范围：0.0 ~ 1.0（默认 0.70）
-• 原理解析：融合原唱音量起伏强弱的比例，兼顾真实感与爱莉希雅的轻柔听感。
+• 原理解析：控制原唱音量起伏与模型输出音量的融合比例。
 
 6️⃣ 演唱时长 (duration / 秒数)
 • 取值范围：6 ~ 16 秒（默认 11 秒）
@@ -125,7 +125,7 @@ def parse_sing_args(raw_args: str) -> Tuple[str, Dict[str, Any]]:
 
 
 class ElysiaSingPlugin(MaiBotPlugin):
-    """爱莉希雅 AI 唱歌插件。"""
+    """MaiSing 唱歌插件。"""
 
     config_model = SingingPluginConfig
     config_widgets = [
@@ -146,7 +146,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
     async def on_load(self) -> None:
         timeout = aiohttp.ClientTimeout(total=self.config.singing.timeout)
         self._session = aiohttp.ClientSession(timeout=timeout)
-        logger.info("[ElysiaSing] 爱莉希雅唱歌插件已就绪！服务地址: %s", self.config.singing.server_url)
+        logger.info("[ElysiaSing] MaiSing 唱歌插件已就绪！服务地址: %s", self.config.singing.server_url)
 
     async def on_unload(self) -> None:
         for task in list(self._cleanup_tasks):
@@ -154,7 +154,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
         self._cleanup_tasks.clear()
         if self._session and not self._session.closed:
             await self._session.close()
-        logger.info("[ElysiaSing] 爱莉希雅唱歌插件已卸载")
+        logger.info("[ElysiaSing] MaiSing 唱歌插件已卸载")
 
     async def on_config_update(self, scope: str, config_data: Dict[str, Any], version: str) -> None:
         """WebUI 配置热更新回调。"""
@@ -233,7 +233,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
 
     @Command(
         "sing",
-        description="点播爱莉希雅为你唱一句歌（支持参数，如：/唱 晴天 +8 或 /唱 后来）",
+        description="点播麦麦唱一句歌（支持参数，如：/唱 晴天 +8 或 /唱 后来）",
         pattern=r"^/(?:sing|唱|唱歌)(?:\s+(?P<args>.+))?$",
     )
     async def handle_sing_command(
@@ -411,7 +411,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
     @Tool(
         "sing_song",
         description=(
-            "演唱歌曲片段。你是爱莉希雅的音乐制作人。爱莉希雅是轻柔元气甜美女高音（舒适音区 A3~E5）。"
+            "演唱歌曲片段，使用用户配置的 RVC 音色模型。"
             "调用此工具时请指定歌名或代表歌词。\n"
             "• 音准与变调由底层 RMVPE 物理基频神经网络自动实时探测与对齐（男声自动对齐至专属 +8 黄金区，女声自动保持原调），无需猜测变调；\n"
             "• 你可根据曲风节奏可选提供：\n"
@@ -429,7 +429,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
             ToolParameterInfo(
                 name="index_rate",
                 param_type=ToolParamType.FLOAT,
-                description="针对该曲风建议的爱莉希雅音色特征比（0.2~0.8，可选）",
+                description="针对该曲风建议的音色特征比（0.2~0.8，可选）",
                 required=False,
             ),
             ToolParameterInfo(
@@ -609,5 +609,5 @@ class ElysiaSingPlugin(MaiBotPlugin):
 
 
 def create_plugin() -> ElysiaSingPlugin:
-    """创建爱莉希雅 AI 唱歌插件实例（MaiBot SDK 2.x 入口）。"""
+    """创建 MaiSing 插件实例（MaiBot SDK 2.x 入口）。"""
     return ElysiaSingPlugin()

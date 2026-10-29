@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""爱莉希雅 AI 唱歌插件 WebUI 配置模型（MaiBot SDK 2.x）。
+"""MaiSing · 麦麦想唱歌 WebUI 配置模型（MaiBot SDK 2.x）。
 
 在 MaiBot 控制面板 / WebUI 插件设置中自动渲染图形化交互配置表单。
 每个选项均配有详细的自然语言功能说明与调音原理。
@@ -93,7 +93,7 @@ class SingServerConfig(PluginConfigBase):
 
 
 class AcousticTuningConfig(PluginConfigBase):
-    """声学与爱莉希雅调音台默认设置。"""
+    """声学与调音默认设置。"""
 
     __ui_label__ = "声学与调音设置"
     __ui_icon__ = "sliders"
@@ -258,7 +258,7 @@ class InteractionConfig(PluginConfigBase):
 
 
 class SingingPluginConfig(PluginConfigBase):
-    """爱莉希雅 AI 唱歌插件总配置。"""
+    """MaiSing 插件总配置。"""
 
     plugin: PluginSectionConfig = Field(default_factory=PluginSectionConfig)
     singing: SingServerConfig = Field(default_factory=SingServerConfig)

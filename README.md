@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎵 MaiBot AI 唱歌插件
+# 🎵 MaiSing · 麦麦想唱歌
 
 给麦麦点一首歌，用你准备的 RVC 声线演唱。
 
