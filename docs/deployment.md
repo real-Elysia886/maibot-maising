@@ -2,11 +2,12 @@
 
 **本地一体化**是在同一台电脑运行 MaiBot 和 GPU 服务；**跨机器**是在有 GPU 的电脑运行服务，由另一台机器的 MaiBot 通过网络连接。两种方式都需要用户自行准备有权使用的音色模型。
 
-插件市场的一键安装只把插件安装到 MaiBot 所在机器，不会自动在 GPU 电脑部署服务。项目发布后，跨机器用户需在 GPU 电脑从 [GitHub 仓库](https://github.com/real-Elysia886/sing)下载发布版本源码包，解压后运行包内的 `server/install_windows.bat`；同机用户可以运行插件目录中的同一安装器。安装器不会启动或修改 MaiBot，也不会自动连接 EasyTier。
+插件市场的一键安装只把插件安装到 MaiBot 所在机器，不会自动在 GPU 电脑部署服务。项目发布后，跨机器用户需在 GPU 电脑从 [GitHub 仓库](https://github.com/real-Elysia886/mailbot-maising)下载发布版本源码包，解压后运行包内的 `server/install_windows.bat`；同机用户可以运行插件目录中的同一安装器。安装器不会启动或修改 MaiBot，也不会自动连接 EasyTier。
 
 ## 1. 安装前准备
 
 - NVIDIA 显卡、驱动和充足显存；已在 RTX 4070 Laptop 上做过单机测试，其他显卡和实际显存需求尚未完成兼容性测试。
+- 一次 8 GB RTX 4070 Laptop 测试中，隔离服务加载前、加载后、生成约 11 秒唱段后的整卡瞬时占用分别约为 1,974、2,421、3,029 MiB；其中包含已有服务和其他进程，并非单进程占用或推理峰值，详见 [README 的实测说明](../README.md#实测显存与模型参考)。
 - Windows 安装器会为 GPU 端准备 Python、Node.js、FFmpeg 和 PyTorch CUDA 环境；手动安装时需自行准备。MaiBot 端使用其自身的 Python，不要求两端共用环境。
 - 测试过的推理环境使用 Python 3.9、`rvc-python==0.1.5`、NumPy 1.23.x 和 GPT-SoVITS 的 UVR5 代码。安装器已在本机隔离环境运行；另一台全新 Windows 电脑和 Linux 安装仍需进一步验证。
 - 参照[模型准备](../server/models/README.md)获取有权使用的 RVC 音色模型；Windows 安装器会准备基础模型和 UVR5 代码。

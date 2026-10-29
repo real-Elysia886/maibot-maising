@@ -41,15 +41,27 @@
 | MaiBot | 已实测 **1.3.17 + SDK 2.19.0**；清单声明 MaiBot 1.3.17–1.3.99、SDK 2.19.0–2.19.99，其他版本尚未逐一验证 |
 | 语音适配器 | 需要支持 `voiceurl` 自定义消息，并能访问生成的音频文件；其他适配器兼容性待验证 |
 | 推理电脑 | 一键安装器面向 **64 位 Windows + NVIDIA GPU**，需兼容 CUDA 11.8 的显卡和驱动 |
-| 显存与性能 | 已在 RTX 4070 Laptop 上生成短唱段；**最低显存和其他 GPU 的速度尚未系统测量**，显存占用与模型、歌曲长度及并发有关 |
+| 显存与性能 | RTX 4070 Laptop 8 GB 实测可生成短唱段，整卡占用约 1.9–3.0 GB；具体条件见下文，**并非最低显存要求** |
 | 硬盘与网络 | GPU 端建议至少预留 **15 GB**；首次安装需下载数 GB 的运行环境和基础模型，并需要稳定网络 |
 | 音色模型 | 自行准备有使用权限的 **RVC v2 `.pth`**，可选配套 `.index`；GPT-SoVITS 的 TTS 模型不能直接作为 RVC 音色 |
 
 Windows 安装器会准备独立的 Python、PyTorch、Node.js、FFmpeg、UVR5 代码和基础模型；Linux 或手动安装参考[部署指南](docs/deployment.md)。全新且没有 C++ 编译工具的 Windows 电脑尚未完成独立端到端验证。
 
+### 实测显存与模型参考
+
+在 Windows、RTX 4070 Laptop（显存 8,188 MiB）的测试中，同时已有其他程序和一套唱歌服务运行。使用 RVC v2 音色模型及配套索引，结合 UVR5 HP5、RMVPE、HuBERT，生成约 11 秒唱段时，通过 `nvidia-smi` 观察到：
+
+| 观察时点 | 整张显卡已用显存 |
+| --- | --- |
+| 启动隔离测试服务前 | 约 1,974 MiB |
+| 测试模型加载完成后 | 约 2,421 MiB |
+| 完成一次唱段推理后 | 约 3,029 MiB |
+
+这些是**整卡的瞬时读数**，包含其他进程，并非本插件单独占用，也不是连续监控得到的推理峰值；不同模型、歌曲长度和并发情况会改变占用。本次使用爱莉希雅 RVC v2 音色作参考测试，该角色模型不随项目提供，使用者需自行准备有权使用的 RVC v2 模型。基础模型及获取方式见 [模型说明](server/models/README.md)。
+
 ## 🚀 快速开始
 
-1. **安装 MaiBot 插件**：在 MaiBot WebUI 中通过 Git 地址安装本仓库 `https://github.com/real-Elysia886/sing`，然后启用。插件尚未进入官方插件市场；审核上架后才可在市场中搜索安装。
+1. **安装 MaiBot 插件**：下载 [最新测试版源码 ZIP](https://github.com/real-Elysia886/mailbot-maising/releases/tag/v1.2.2)，在 WebUI 的「插件扩展 → … → 从 ZIP 安装插件」中选择 ZIP；如面板支持从 Git 安装，也可填写 `https://github.com/real-Elysia886/mailbot-maising`。安装后启用。插件尚未进入官方插件市场；审核上架后才可在市场中搜索安装。
 2. **准备 GPU 推理服务**：在 GPU 电脑获取本仓库，双击 `server/install_windows.bat`，按提示选择自己的 RVC v2 音色模型。安装结束后运行 `server/start_server.bat`。
 3. **连接服务**：同机运行时，WebUI 中填写默认地址 `http://127.0.0.1:9881`。云端连接本地电脑请参考 [EasyTier 组网教程](docs/easytier.md)，设置可达地址和服务令牌。
 4. **检查并点歌**：向 MaiBot 发送 `/唱歌状态`，连接正常后发送 `/唱 歌名`。

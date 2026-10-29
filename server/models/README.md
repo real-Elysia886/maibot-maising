@@ -2,6 +2,8 @@
 
 模型要放在运行推理服务的 GPU 机器上，不是填进 MaiBot WebUI。本项目不包含或提供爱莉希雅音色权重；Windows 安装器会下载 UVR5、RMVPE 和 HuBERT 基础模型，但 RVC 音色模型需要自行准备。
 
+实测使用爱莉希雅 RVC v2 音色模型（`.pth`）和配套 `.index`，以及 HP5、RMVPE、HuBERT 基础模型。角色模型仅作为测试参考，项目不提供下载，其他获得授权的 RVC v2 模型也可尝试，效果需要自行试听。显存观察及其限制见 [README](../../README.md#实测显存与模型参考)。
+
 | 模型 | 获取方式 | 放置或配置 |
 | --- | --- | --- |
 | RVC v2 声线模型 `.pth` | 自训练或获授权的兼容模型；本项目不提供角色模型下载 | `settings.json` 中的 `rvc_model`，或 `models/elysiav3.pth` |
