@@ -1,0 +1,28 @@
+[plugin]
+enabled = true
+config_version = "1.2.0"
+
+[singing]
+# 唱歌推理后端服务地址 (FastAPI)
+# - 本地单机部署：保持默认 http://127.0.0.1:9881
+# - 跨网 EasyTier 组网：填入 GPU 电脑的 EasyTier 虚拟 IP，例如 http://10.42.0.2:9881
+server_url = "http://127.0.0.1:9881"
+timeout = 60
+audio_output_dir = ""
+server_token = ""
+auto_clean_delay = 180
+
+[acoustic]
+# 专属基准变调设置（半音）
+default_male_pitch_shift = 8
+default_female_pitch_shift = 0
+default_duration = 11.0
+default_index_rate = 0.40
+default_protect = 0.45
+default_filter_radius = 4
+default_rms_mix_rate = 0.70
+
+[interaction]
+send_song_card = true
+enable_tool_calling = true
+enable_llm_auto_tuning = false

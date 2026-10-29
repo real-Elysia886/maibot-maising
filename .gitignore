@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+server/.music_u
+server/settings.json
+server/tools/放行Windows防火墙端口.bat
+技术说明交接文档.md
+AGENTS.md
+config.toml
+config_back/
+venv/
+.venv/
+.runtime/
+.local-check/
+.release-assets/
+ENV/
+env/
+
+# Server Temp & Output Audio
+server/temp/
+server/outputs/
+*.wav
+*.mp3
+*.flac
+*.log
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Model Weights (Large Files)
+*.pth
+*.pt
+*.index
+*.onnx
+*.7z
+*.zip
+*.tar.gz
+
+# OS specific
+.DS_Store
+Thumbs.db

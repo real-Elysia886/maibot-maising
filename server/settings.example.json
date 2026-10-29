@@ -1,0 +1,12 @@
+{
+  "host": "127.0.0.1",
+  "port": 9881,
+  "api_token": "",
+  "rvc_model": "models/elysiav3.pth",
+  "rvc_index": "",
+  "uvr_model": "models/HP5_only_main_vocal.pth",
+  "uvr_tools_dir": "",
+  "node_executable": "",
+  "node_modules": "node_modules",
+  "ffmpeg_executable": ""
+}
