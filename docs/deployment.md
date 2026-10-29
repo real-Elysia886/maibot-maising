@@ -7,9 +7,9 @@
 ## 1. 安装前准备
 
 - NVIDIA 显卡、驱动和充足显存；已在 RTX 4070 Laptop 上做过单机测试，其他显卡和实际显存需求尚未完成兼容性测试。
-- GPU 端准备 Python、Node.js、FFmpeg 和兼容显卡的 PyTorch CUDA 环境；MaiBot 端使用其自身的 Python，不要求两端共用环境。
-- 测试过的推理环境使用 Python 3.9、`rvc-python==0.1.5`、NumPy 1.23.x 和 GPT-SoVITS 的 UVR5 代码。全新环境及 Linux 安装仍需进一步验证，以下步骤不是已验证的一键安装程序。
-- 参照[模型准备](../server/models/README.md)获取有权使用的模型文件，并确认 UVR5 代码与依赖可用。
+- Windows 安装器会为 GPU 端准备 Python、Node.js、FFmpeg 和 PyTorch CUDA 环境；手动安装时需自行准备。MaiBot 端使用其自身的 Python，不要求两端共用环境。
+- 测试过的推理环境使用 Python 3.9、`rvc-python==0.1.5`、NumPy 1.23.x 和 GPT-SoVITS 的 UVR5 代码。安装器已在本机隔离环境运行；另一台全新 Windows 电脑和 Linux 安装仍需进一步验证。
+- 参照[模型准备](../server/models/README.md)获取有权使用的 RVC 音色模型；Windows 安装器会准备基础模型和 UVR5 代码。
 
 ## 2. Windows 安装器（验证中）
 
@@ -17,7 +17,7 @@
 
 安装器使用 `server/.runtime`、`server/.venv` 和本地 `settings.json`，不会修改现有 GPT-SoVITS 环境；已有 `settings.json` 不会覆盖。请预留至少 15 GB 空间并保持网络畅通。下载依赖较大，可能耗时；Windows 防火墙或代理可能影响下载。PyTorch CUDA 11.8 构建不保证支持所有较新 GPU，驱动和显卡须兼容。
 
-安装器会从项目的 `v1.2.0` Release 下载并校验 Windows x64 / Python 3.9 的 Fairseq 预编译包，避免在用户机器编译；来源和校验值见[第三方组件说明](fairseq-build.md)。如 Release 还没有发布，安装器无法获取此文件；请等待正式发布或使用手动安装。预编译包已在隔离环境验证安装与导入，但尚未在另一台没有 C++ 工具的全新 Windows 上验证完整流程。
+安装器会从项目的 `v1.2.0` Release 下载并校验 Windows x64 / Python 3.9 的 Fairseq 预编译包，避免在用户机器编译；来源和校验值见[第三方组件说明](fairseq-build.md)。预编译包已在隔离环境验证安装与导入，但尚未在另一台没有 C++ 工具的全新 Windows 上验证完整流程。
 
 安装器不会启动服务，也不会读取或填写任何网易云凭据。完成后参见下文的“启动并连接”；跨机器运行请阅读 [EasyTier 教程](easytier.md)。
 

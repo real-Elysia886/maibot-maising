@@ -1,6 +1,6 @@
 # 模型准备
 
-模型要放在运行推理服务的 GPU 机器上，不是填进 MaiBot WebUI。本项目不包含或提供爱莉希雅音色权重，也不自动下载模型。
+模型要放在运行推理服务的 GPU 机器上，不是填进 MaiBot WebUI。本项目不包含或提供爱莉希雅音色权重；Windows 安装器会下载 UVR5、RMVPE 和 HuBERT 基础模型，但 RVC 音色模型需要自行准备。
 
 | 模型 | 获取方式 | 放置或配置 |
 | --- | --- | --- |
@@ -10,7 +10,7 @@
 | RMVPE `rmvpe.pt` | [RVC 官方资源仓库](https://huggingface.co/lj1995/VoiceConversionWebUI/tree/main) | 当前 `rvc-python` 安装目录的 `base_model/rmvpe.pt` |
 | HuBERT `hubert_base.pt` | [RVC 官方资源仓库](https://huggingface.co/lj1995/VoiceConversionWebUI/tree/main) | 同一 `base_model/hubert_base.pt` |
 
-还需要 GPT-SoVITS 的 `tools/uvr5` 下的 `vr.py` 和配套模块；将该目录写入 `uvr_tools_dir`。不需要启动 GPT-SoVITS 的 TTS 服务，但需要兼容的 UVR5 代码及其依赖。不要修改现有生产环境的依赖；项目尚未完成全新环境的一键安装验证。
+还需要 GPT-SoVITS 的 `tools/uvr5` 下的 `vr.py` 和配套模块；Windows 安装器会下载并配置，手动安装时将该目录写入 `uvr_tools_dir`。不需要启动 GPT-SoVITS 的 TTS 服务，但需要兼容的 UVR5 代码及其依赖。不要修改现有生产环境的依赖；一键安装器尚未在另一台全新 Windows 电脑独立验证。
 
 查找当前 Python 环境里的 `rvc-python` 目录，用启动服务的同一个 Python 运行：
 
