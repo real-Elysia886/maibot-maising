@@ -12,7 +12,8 @@
   "urls": {
     "repository": "https://github.com/real-Elysia886/maibot-maising",
     "homepage": "https://github.com/real-Elysia886/maibot-maising",
-    "documentation": "https://github.com/real-Elysia886/maibot-maising#readme"
+    "documentation": "https://github.com/real-Elysia886/maibot-maising#readme",
+    "issues": "https://github.com/real-Elysia886/maibot-maising/issues"
   },
   "host_application": {
     "min_version": "1.3.17",
@@ -29,7 +30,7 @@
       "version_spec": ">=3.8.0"
     }
   ],
-  "plugin_type": "extension",
+  "plugin_type": "media",
   "capabilities": [
     "send.text",
     "send.custom"
