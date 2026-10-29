@@ -50,17 +50,7 @@ Windows 安装器会准备独立的 Python、PyTorch、Node.js、FFmpeg、UVR5 �
 
 ### 硬件与模型参考
 
-在 Windows、RTX 4070 Laptop（显存 8,188 MiB）的本机测试中，同时已有其他程序和一套唱歌服务运行。使用 RVC v2 音色模型及配套索引，结合 UVR5 HP5、RMVPE、HuBERT，生成约 11 秒唱段时，通过 `nvidia-smi` 观察到：
-
-| 观察时点 | 整张显卡已用显存 |
-| --- | --- |
-| 启动隔离测试服务前 | 约 1,974 MiB |
-| 测试模型加载完成后 | 约 2,421 MiB |
-| 完成一次唱段推理后 | 约 3,029 MiB |
-
-这些是**整卡的瞬时读数**，包含其他进程，并非本插件单独占用，也不是连续监控得到的推理峰值。
-
-以下是此前云端部署、使用当前 RVC 音色模型时的**实际监测记录**，运行流畅：
+以下是云端部署、使用当前 RVC 音色模型时的**实际监测记录**，运行流畅：
 
 | 指标 | 待机常驻 | 点歌推理峰值 |
 | --- | --- | --- |
@@ -76,7 +66,7 @@ Windows 安装器会准备独立的 Python、PyTorch、Node.js、FFmpeg、UVR5 �
 
 ## 🚀 快速开始
 
-1. **安装 MaiBot 插件**：下载 [最新测试版源码 ZIP](https://github.com/real-Elysia886/mailbot-maising/releases/tag/v1.2.4)，在 WebUI 的「插件扩展 → … → 从 ZIP 安装插件」中选择 ZIP；如面板支持从 Git 安装，也可填写 `https://github.com/real-Elysia886/mailbot-maising`。安装后启用。插件尚未进入官方插件市场；审核上架后才可在市场中搜索安装。
+1. **安装 MaiBot 插件**：下载 [最新测试版源码 ZIP](https://github.com/real-Elysia886/mailbot-maising/releases/tag/v1.0.0)，在 WebUI 的「插件扩展 → … → 从 ZIP 安装插件」中选择 ZIP；如面板支持从 Git 安装，也可填写 `https://github.com/real-Elysia886/mailbot-maising`。安装后启用。插件尚未进入官方插件市场；审核上架后才可在市场中搜索安装。
 2. **准备 GPU 推理服务**：在 GPU 电脑获取本仓库，双击 `server/install_windows.bat`，按提示选择自己的 RVC v2 音色模型。安装结束后运行 `server/start_server.bat`。
 3. **连接服务**：同机运行时，WebUI 中填写默认地址 `http://127.0.0.1:9881`。云端连接本地电脑请参考 [EasyTier 组网教程](docs/easytier.md)，设置可达地址和服务令牌。
 4. **检查并点歌**：向 MaiBot 发送 `/唱歌状态`，连接正常后发送 `/唱 歌名`。

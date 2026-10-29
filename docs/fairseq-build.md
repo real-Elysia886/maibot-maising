@@ -1,6 +1,6 @@
 # Fairseq 预编译包说明
 
-唱歌服务使用 `rvc-python==0.1.5`，它依赖 `fairseq==0.12.2`。为了减少 Windows 用户编译负担，[v1.2.0 Release](https://github.com/real-Elysia886/mailbot-maising/releases/tag/v1.2.0) 提供 `fairseq-0.12.2-cp39-cp39-win_amd64.whl`，适用于 64 位 Windows 和 CPython 3.9。
+唱歌服务使用 `rvc-python==0.1.5`，它依赖 `fairseq==0.12.2`。为了减少 Windows 用户编译负担，[v1.0.0 Release](https://github.com/real-Elysia886/mailbot-maising/releases/tag/v1.0.0) 提供 `fairseq-0.12.2-cp39-cp39-win_amd64.whl`，适用于 64 位 Windows 和 CPython 3.9。
 
 - 上游项目：[facebookresearch/fairseq](https://github.com/facebookresearch/fairseq)，MIT 许可证；wheel 内保留上游许可证。
 - 上游源码：PyPI 的 [fairseq 0.12.2 源码包](https://pypi.org/project/fairseq/0.12.2/#files)，SHA-256 `34f1b18426bf3844714534162f065ab733e049597476daa35fffb4d06a92b524`。

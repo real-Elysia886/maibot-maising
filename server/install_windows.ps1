@@ -74,7 +74,7 @@ try {
     $wheelDir = Join-Path $runtime 'wheels'
     New-Item -ItemType Directory -Path $wheelDir -Force | Out-Null
     $fairseqWheel = Join-Path $wheelDir 'fairseq-0.12.2-cp39-cp39-win_amd64.whl'
-    Download-Checked 'https://github.com/real-Elysia886/mailbot-maising/releases/download/v1.2.0/fairseq-0.12.2-cp39-cp39-win_amd64.whl' $fairseqWheel '6462b57088ba3d070016b5c58660233816bdbfe149747c9586b579a1e2355ea1'
+    Download-Checked 'https://github.com/real-Elysia886/mailbot-maising/releases/download/v1.0.0/fairseq-0.12.2-cp39-cp39-win_amd64.whl' $fairseqWheel '6462b57088ba3d070016b5c58660233816bdbfe149747c9586b579a1e2355ea1'
     Run-Checked $python @('-s', '-m', 'pip', 'install', '--no-deps', $fairseqWheel)
     Run-Checked $python @('-s', '-m', 'pip', 'install', '-r', (Join-Path $root 'requirements.txt'), 'librosa==0.9.2', 'numba==0.56.4', 'scipy==1.9.3', 'imageio-ffmpeg')
 
