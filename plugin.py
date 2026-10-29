@@ -16,6 +16,7 @@ import uuid
 import asyncio
 import logging
 import aiohttp
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 from maibot_sdk import MaiBotPlugin, Command, Tool
@@ -608,6 +609,31 @@ class ElysiaSingPlugin(MaiBotPlugin):
             pass
 
 
+def _repair_empty_host_config() -> None:
+    """修复宿主开关在首次加载前生成的仅含 enabled 的无版本配置。"""
+    path = Path(__file__).resolve().parent / "config.toml"
+    try:
+        if not path.is_file() or path.is_symlink():
+            return
+        with path.open("r+b") as f:
+            original = f.read()
+            text = original.decode("utf-8-sig")
+            if not re.fullmatch(
+                r"[ \t\r\n]*\[plugin\][ \t]*\r?\n[ \t]*enabled[ \t]*=[ \t]*(?:true|false)[ \t\r\n]*",
+                text,
+            ):
+                return
+            f.seek(0)
+            if f.read() != original:
+                return
+            f.seek(0, os.SEEK_END)
+            prefix = b"" if original.endswith((b"\n", b"\r")) else b"\n"
+            f.write(prefix + b'config_version = "1.2.0"\n')
+    except (OSError, UnicodeError):
+        logger.warning("[ElysiaSing] 无法自动修复初始插件配置，请查看 README。")
+
+
 def create_plugin() -> ElysiaSingPlugin:
     """创建 MaiSing 插件实例（MaiBot SDK 2.x 入口）。"""
+    _repair_empty_host_config()
     return ElysiaSingPlugin()
