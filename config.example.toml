@@ -23,6 +23,6 @@ default_filter_radius = 4
 default_rms_mix_rate = 0.70
 
 [interaction]
-send_song_card = true
+send_song_card = false
 enable_tool_calling = true
 enable_llm_auto_tuning = false

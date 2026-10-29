@@ -227,11 +227,11 @@ class InteractionConfig(PluginConfigBase):
     __ui_order__ = 4
 
     send_song_card: bool = Field(
-        default=True,
+        default=False,
         description="点歌成功后是否发送调音信息卡片",
         json_schema_extra={
             "label": "发送调音信息卡片",
-            "hint": "点歌或重唱成功后，是否自动发送一条包含歌名、歌手、当前变调数值、相似度，以及快捷调参重唱提示的文字卡片。",
+            "hint": "默认关闭。开启后，点歌或重唱成功时会额外发送歌名、歌手、变调和相似度等调音信息。",
         },
     )
     enable_tool_calling: bool = Field(
