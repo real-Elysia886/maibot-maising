@@ -41,8 +41,8 @@
 | MaiBot | 已实测 **1.3.17 + SDK 2.19.0**；清单声明 MaiBot 1.3.17–1.3.99、SDK 2.19.0–2.19.99，其他版本尚未逐一验证 |
 | 语音适配器 | 需要支持 `voiceurl` 自定义消息，并能访问生成的音频文件；其他适配器兼容性待验证 |
 | 推理电脑 | 一键安装器面向 **64 位 Windows + NVIDIA GPU**，需兼容 CUDA 11.8 版 PyTorch 和相应驱动 |
-| 显存 | 估计 **4 GB 可尝试、6 GB 及以上更稳妥**；4 GB 显卡尚未实测，不能保证成功 |
-| 系统内存 | 估计 **8 GB 可尝试、16 GB 及以上推荐**；同机运行 MaiBot 和其他程序需要更多余量，8 GB 尚未实测 |
+| 显存 | 推荐 **4 GB 及以上**，具体取决于使用的模型 |
+| 系统内存 | 推荐 **8 GB 及以上** |
 | 硬盘与网络 | GPU 端建议至少预留 **15 GB**；首次安装需下载数 GB 的运行环境和基础模型，并需要稳定网络 |
 | 音色模型 | 自行准备有使用权限的 **RVC v2 `.pth`**，可选配套 `.index`；GPT-SoVITS 的 TTS 模型不能直接作为 RVC 音色 |
 
@@ -68,7 +68,7 @@ Windows 安装器会准备独立的 Python、PyTorch、Node.js、FFmpeg、UVR5 �
 | 系统内存 | 约 1.0–1.2 GB | 约 1.8–2.2 GB |
 | GPU 利用率 | 约 0% | 瞬时约 30%–60%，持续约 3–5 秒 |
 
-以上是当前模型和测试场景的监测结果，不代表其他模型、歌曲长度或并发情况下的固定上限。按该记录推断，4 GB NVIDIA 显卡可以尝试，建议优先选择 6 GB 及以上；例如 4 GB 的 RTX 3050 Laptop 可作为待验证的参考型号，并非已实测的最低型号。8 GB 系统内存可能足够运行简化环境，同机运行 MaiBot 或其他程序时推荐 16 GB 以上。显存不足时可关闭其他 GPU 程序、减少并发或缩短唱段。
+云端和本地的系统内存监测占用未超过 6 GB。具体占用会随模型和运行的程序变化；显存不足时可关闭其他 GPU 程序、减少并发或缩短唱段。
 
 此前模型监测中，显存常驻包括 UVR5 HP5 约 480 MB、RMVPE 约 200 MB、RVC v2 + HuBERT 约 850 MB；推理时分离与转换阶段各增加约 400 MB。框架共享与缓存会影响统计，这些数值适用于当时的模型和测试场景。
 
@@ -76,7 +76,7 @@ Windows 安装器会准备独立的 Python、PyTorch、Node.js、FFmpeg、UVR5 �
 
 ## 🚀 快速开始
 
-1. **安装 MaiBot 插件**：下载 [最新测试版源码 ZIP](https://github.com/real-Elysia886/mailbot-maising/releases/tag/v1.2.3)，在 WebUI 的「插件扩展 → … → 从 ZIP 安装插件」中选择 ZIP；如面板支持从 Git 安装，也可填写 `https://github.com/real-Elysia886/mailbot-maising`。安装后启用。插件尚未进入官方插件市场；审核上架后才可在市场中搜索安装。
+1. **安装 MaiBot 插件**：下载 [最新测试版源码 ZIP](https://github.com/real-Elysia886/mailbot-maising/releases/tag/v1.2.4)，在 WebUI 的「插件扩展 → … → 从 ZIP 安装插件」中选择 ZIP；如面板支持从 Git 安装，也可填写 `https://github.com/real-Elysia886/mailbot-maising`。安装后启用。插件尚未进入官方插件市场；审核上架后才可在市场中搜索安装。
 2. **准备 GPU 推理服务**：在 GPU 电脑获取本仓库，双击 `server/install_windows.bat`，按提示选择自己的 RVC v2 音色模型。安装结束后运行 `server/start_server.bat`。
 3. **连接服务**：同机运行时，WebUI 中填写默认地址 `http://127.0.0.1:9881`。云端连接本地电脑请参考 [EasyTier 组网教程](docs/easytier.md)，设置可达地址和服务令牌。
 4. **检查并点歌**：向 MaiBot 发送 `/唱歌状态`，连接正常后发送 `/唱 歌名`。

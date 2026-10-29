@@ -6,7 +6,7 @@
 
 ## 1. 安装前准备
 
-- NVIDIA 显卡和兼容 CUDA 11.8 版 PyTorch 的驱动；估计 4 GB 显存可尝试，建议 6 GB 及以上。估计最低 8 GB 系统内存，推荐 16 GB 及以上；4 GB 显卡及 8 GB 内存配置尚未实测。
+- NVIDIA 显卡和兼容 CUDA 11.8 版 PyTorch 的驱动；推荐 4 GB 及以上显存（取决于模型），推荐 8 GB 及以上系统内存。
 - 一次 8 GB RTX 4070 Laptop 测试中，隔离服务加载前、加载后、生成约 11 秒唱段后的整卡瞬时占用分别约为 1,974、2,421、3,029 MiB；其中包含已有服务和其他进程，并非单进程占用或推理峰值，详见 [README 的实测说明](../README.md#硬件与模型参考)。
 - Windows 安装器会为 GPU 端准备 Python、Node.js、FFmpeg 和 PyTorch CUDA 环境；手动安装时需自行准备。MaiBot 端使用其自身的 Python，不要求两端共用环境。
 - 测试过的推理环境使用 Python 3.9、`rvc-python==0.1.5`、NumPy 1.23.x 和 GPT-SoVITS 的 UVR5 代码。安装器已在本机隔离环境运行；另一台全新 Windows 电脑和 Linux 安装仍需进一步验证。
