@@ -2,7 +2,7 @@
 
 **本地一体化**是在同一台电脑运行 MaiBot 和 GPU 服务；**跨机器**是在有 GPU 的电脑运行服务，由另一台机器的 MaiBot 通过网络连接。两种方式都需要用户自行准备有权使用的音色模型。
 
-插件市场的一键安装只把插件安装到 MaiBot 所在机器，不会自动在 GPU 电脑部署服务。项目发布后，跨机器用户需在 GPU 电脑从 [GitHub 仓库](https://github.com/real-Elysia886/mailbot-maising)下载发布版本源码包，解压后运行包内的 `server/install_windows.bat`；同机用户可以运行插件目录中的同一安装器。安装器不会启动或修改 MaiBot，也不会自动连接 EasyTier。
+插件市场的一键安装只把插件安装到 MaiBot 所在机器，不会自动在 GPU 电脑部署服务。项目发布后，跨机器用户需在 GPU 电脑从 [GitHub 仓库](https://github.com/real-Elysia886/maibot-maising)下载发布版本源码包，解压后运行包内的 `server/install_windows.bat`；同机用户可以运行插件目录中的同一安装器。安装器不会启动或修改 MaiBot，也不会自动连接 EasyTier。
 
 ## 1. 安装前准备
 

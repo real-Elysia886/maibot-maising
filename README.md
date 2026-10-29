@@ -66,7 +66,7 @@ Windows 安装器会准备独立的 Python、PyTorch、Node.js、FFmpeg、UVR5 �
 
 ## 🚀 快速开始
 
-1. **安装 MaiBot 插件**：下载 [最新测试版源码 ZIP](https://github.com/real-Elysia886/mailbot-maising/releases/tag/v1.0.0)，在 WebUI 的「插件扩展 → … → 从 ZIP 安装插件」中选择 ZIP；如面板支持从 Git 安装，也可填写 `https://github.com/real-Elysia886/mailbot-maising`。安装后启用。插件尚未进入官方插件市场；审核上架后才可在市场中搜索安装。
+1. **安装 MaiBot 插件**：下载 [最新测试版源码 ZIP](https://github.com/real-Elysia886/maibot-maising/releases/tag/v1.0.0)，在 WebUI 的「插件扩展 → … → 从 ZIP 安装插件」中选择 ZIP；如面板支持从 Git 安装，也可填写 `https://github.com/real-Elysia886/maibot-maising`。安装后启用。插件尚未进入官方插件市场；审核上架后才可在市场中搜索安装。
 2. **准备 GPU 推理服务**：在 GPU 电脑获取本仓库，双击 `server/install_windows.bat`，按提示选择自己的 RVC v2 音色模型。安装结束后运行 `server/start_server.bat`。
 3. **连接服务**：同机运行时，WebUI 中填写默认地址 `http://127.0.0.1:9881`。云端连接本地电脑请参考 [EasyTier 组网教程](docs/easytier.md)，设置可达地址和服务令牌。
 4. **检查并点歌**：向 MaiBot 发送 `/唱歌状态`，连接正常后发送 `/唱 歌名`。

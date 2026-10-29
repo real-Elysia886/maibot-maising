@@ -10,9 +10,9 @@
   },
   "license": "MIT",
   "urls": {
-    "repository": "https://github.com/real-Elysia886/mailbot-maising",
-    "homepage": "https://github.com/real-Elysia886/mailbot-maising",
-    "documentation": "https://github.com/real-Elysia886/mailbot-maising#readme"
+    "repository": "https://github.com/real-Elysia886/maibot-maising",
+    "homepage": "https://github.com/real-Elysia886/maibot-maising",
+    "documentation": "https://github.com/real-Elysia886/maibot-maising#readme"
   },
   "host_application": {
     "min_version": "1.3.17",
