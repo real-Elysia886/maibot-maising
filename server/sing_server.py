@@ -505,8 +505,15 @@ def api_sing(
 
 @app.get("/download/{filename}")
 def download_file(filename: str):
-    target = os.path.join(OUTPUT_DIR, filename)
-    if not os.path.exists(target):
+    if not filename or filename in (".", "..") or "/" in filename or "\\" in filename or os.path.isabs(filename):
+        raise HTTPException(status_code=404, detail="文件不存在")
+    output_dir = os.path.realpath(OUTPUT_DIR)
+    target = os.path.realpath(os.path.join(output_dir, filename))
+    try:
+        contained = os.path.commonpath((output_dir, target)) == output_dir
+    except ValueError:
+        contained = False
+    if not contained or not os.path.isfile(target):
         raise HTTPException(status_code=404, detail="文件不存在")
     return FileResponse(target, media_type="audio/wav")
 

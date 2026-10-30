@@ -20,7 +20,7 @@ class PluginSectionConfig(PluginConfigBase):
         description="是否启用唱歌插件",
         json_schema_extra={
             "label": "启用插件",
-            "hint": "总开关。关闭后不再响应 /唱、/重唱、/清空唱段 指令，也不会在自然聊天中调用唱歌工具。",
+            "hint": "总开关。关闭后不再响应 /唱、/重唱 指令，也不会在自然聊天中调用唱歌工具。",
         },
     )
     config_version: str = Field(

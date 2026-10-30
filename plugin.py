@@ -6,7 +6,7 @@
 - 用户通过 `/唱 <歌名/歌词> [参数]`（如：/唱 晴天 +12 或 /唱 后来）点播歌曲
 - 用户通过 `/重唱 [参数]`（如：/重唱 +12 或 /重唱 相似度=0.45）重新生成并调参
 - 用户通过 `/唱 帮助` 查看所有调音选项的自然语言说明
-- 用户通过 `/清空唱段` 一键删除并释放本地与服务端的切片缓存
+- 插件在发送后自动清理临时音频
 - LLM 在自然聊天中可通过 `sing_song` 工具自主演唱
 """
 
@@ -63,8 +63,7 @@ PARAM_HELP_TEXT = """🎛️【MaiSing 调音台 · 参数指南】
 • /重唱 +12 （一键转甜美女高音）
 • /重唱 0 （一键切回原调抒情音）
 • /重唱 变调=+8 时长=13
-• /唱歌状态 （检查推理服务能否连接）
-• /清空唱段 （清理释放历史音频切片缓存）"""
+• /唱歌状态 （检查推理服务能否连接）"""
 
 
 def parse_sing_args(raw_args: str) -> Tuple[str, Dict[str, Any]]:
@@ -359,53 +358,6 @@ class ElysiaSingPlugin(MaiBotPlugin):
             message = "无法连接唱歌服务，请检查服务地址、网络和推理服务是否启动。"
         await self.ctx.send.text(message, stream_id)
         return False, message, 1
-
-    # ─── 命令：删除与清理历史唱段缓存 ─────────────────────────────────
-
-    @Command(
-        "clean_sing",
-        description="清理唱歌历史缓存与临时音频切片",
-        pattern=r"^/(?:clean_sing|清理唱段|清空唱段|清理唱歌缓存)$",
-    )
-    async def handle_clean_command(
-        self,
-        stream_id: str = "",
-        text: str = "",
-        matched_groups: Optional[Dict[str, Any]] = None,
-        **kwargs: Any,
-    ) -> Tuple[bool, str, bool]:
-        """清理所有临时缓存音频。"""
-        if not self.config.plugin.enabled:
-            return False, "唱歌插件已在配置中禁用", True
-        if not stream_id:
-            return False, "缺少 stream_id", True
-
-        cleaned_count = 0
-        out_dir = self._audio_dir()
-        if os.path.exists(out_dir):
-            for name in os.listdir(out_dir):
-                if name.startswith("sing_elysia_") and name.endswith(".wav"):
-                    try:
-                        os.remove(os.path.join(out_dir, name))
-                        cleaned_count += 1
-                    except Exception:
-                        pass
-
-        # 同时通知本地服务端清理切片
-        try:
-            if not self._session or self._session.closed:
-                raise RuntimeError("唱歌服务连接未初始化")
-            server_url = self.config.singing.server_url.rstrip("/")
-            async with self._session.post(f"{server_url}/clean", headers=self._headers()) as resp:
-                resp.raise_for_status()
-        except Exception as exc:
-            logger.warning("[ElysiaSing] 服务端缓存清理失败: %s", exc)
-            await self.ctx.send.text(f"本地已清理 {cleaned_count} 个文件，但服务端缓存清理失败。", stream_id)
-            return False, "服务端缓存清理失败", True
-
-        msg = f"🧹 唱歌临时缓存已全部清理完毕！（已清理释放 {cleaned_count} 个本地切片）"
-        await self.ctx.send.text(msg, stream_id)
-        return True, msg, True
 
     # ─── 工具：LLM 自然对话中自主调用 ────────────────────────────────────
 
