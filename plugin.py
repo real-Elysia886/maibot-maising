@@ -12,6 +12,7 @@
 
 import os
 import re
+import unicodedata
 import uuid
 import asyncio
 import logging
@@ -30,7 +31,7 @@ PARAM_HELP_TEXT = """🎛️【MaiSing 调音台 · 参数指南】
 您可以在「/唱」或「/重唱」后面自由追加调音参数，就像在专业录音棚调音一样：
 
 1️⃣ 变调 (pitch / 音调)
-• 取值范围：-12 到 +12 个半音（默认基准：男声+8，女声0）
+• 取值范围：-12 到 +12 个半音
 • 原理解析：默认备用变调为 +8 半音；音高检测成功时会根据音源自动调整，也可手动指定。不同音色模型适合的变调可能不同。
 • 常用示例：/重唱 +8  或  /唱 晴天 变调=+8  或  /重唱 0
 
@@ -41,12 +42,12 @@ PARAM_HELP_TEXT = """🎛️【MaiSing 调音台 · 参数指南】
 
 3️⃣ 咬字保护 (protect / 呼吸)
 • 取值范围：0.0 ~ 0.5（默认 0.45）
-• 原理解析：保护歌手换气声、轻柔气声细节与清辅音拼音开头（b, p, t, k, s 等），防止吞字破音。
+• 原理解析：保护气声与清辅音；数值越低保护越强，但可能影响音色转换效果。
 • 常用示例：/重唱 保护=0.48
 
 4️⃣ 平滑度 (filter / 平滑)
 • 取值范围：0 ~ 7（默认 4）
-• 原理解析：过滤音高杂音与走调。数值越大音准曲线越平稳；数值小更保留原歌手真假音微颤。
+• 原理解析：音高滤波参数，实际效果取决于推理实现和音高提取方式。
 • 常用示例：/重唱 平滑=5
 
 5️⃣ 动态融合 (rms / 响度)
@@ -59,9 +60,9 @@ PARAM_HELP_TEXT = """🎛️【MaiSing 调音台 · 参数指南】
 • 常用示例：/重唱 时长=14  或  /唱 起风了 秒=13
 
 💡 常用快捷操作：
-• /重唱 +8 （切回专属男声音域最佳黄金点）
-• /重唱 +12 （一键转甜美女高音）
-• /重唱 0 （一键切回原调抒情音）
+• /重唱 +8 （升高 8 个半音）
+• /重唱 +12 （升高 12 个半音）
+• /重唱 0 （使用原调）
 • /重唱 变调=+8 时长=13
 • /唱歌状态 （检查推理服务能否连接）"""
 
@@ -73,14 +74,16 @@ def parse_sing_args(raw_args: str) -> Tuple[str, Dict[str, Any]]:
     text_parts = []
 
     for t in tokens:
+        original = t
+        t = unicodedata.normalize("NFKC", t).replace("−", "-")
         # 纯数字/符号变调简写（如 +12, -2, 0, 12, +8）
         if re.match(r"^[+-]?\d+$", t):
             params["pitch_shift"] = int(t)
             continue
 
         # 键值对解析（如 变调=8, pitch=8, 相似度=0.4, index=0.4）
-        if "=" in t or "：" in t:
-            sep = "=" if "=" in t else "："
+        if "=" in t or ":" in t:
+            sep = "=" if "=" in t else ":"
             k, v = t.split(sep, 1)
             k = k.strip().lower()
             v = v.strip()
@@ -116,9 +119,9 @@ def parse_sing_args(raw_args: str) -> Tuple[str, Dict[str, Any]]:
                 except ValueError:
                     pass
             else:
-                text_parts.append(t)
+                text_parts.append(original)
         else:
-            text_parts.append(t)
+            text_parts.append(original)
 
     text = " ".join(text_parts).strip()
     return text, params
@@ -304,21 +307,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
             if merged_params["pitch_shift"] == 0:
                 merged_params["pitch_shift"] = 8
 
-        param_desc_list = []
-        if "pitch_shift" in merged_params:
-            p = merged_params["pitch_shift"]
-            param_desc_list.append(f"变调: {'+' if p > 0 else ''}{p}")
-        if "index_rate" in merged_params:
-            param_desc_list.append(f"相似度: {merged_params['index_rate']}")
-        if "protect" in merged_params:
-            param_desc_list.append(f"咬字保护: {merged_params['protect']}")
-        if "filter_radius" in merged_params:
-            param_desc_list.append(f"平滑度: {merged_params['filter_radius']}")
-        desc_str = "，".join(param_desc_list) if param_desc_list else "默认参数"
-
-        await self.ctx.send.text(f"🔄 正在为您重新生成《{last_query}》（{desc_str}）...", stream_id)
-
-        success, msg = await self._do_sing(stream_id, last_query, custom_params=merged_params, is_tool=False)
+        success, msg = await self._do_sing(stream_id, last_query, custom_params=merged_params, is_tool=False, show_song_card=False)
         return success, msg, True
 
     @Command(
@@ -365,18 +354,18 @@ class ElysiaSingPlugin(MaiBotPlugin):
         "sing_song",
         description=(
             "演唱歌曲片段，使用用户配置的 RVC 音色模型。"
-            "调用此工具时请指定歌名或代表歌词。\n"
-            "• 音准与变调由底层 RMVPE 物理基频神经网络自动实时探测与对齐（男声自动对齐至专属 +8 黄金区，女声自动保持原调），无需猜测变调；\n"
-            "• 你可根据曲风节奏可选提供：\n"
-            "  - index_rate（音色比 0.2~0.8）：快歌元气（0.5~0.6），慢歌丝滑（0.3~0.4）；\n"
-            "  - protect（保护比 0.2~0.5）：抒情留气声（0.45~0.48），快歌吐字利落（0.38~0.42）；\n"
+            "用户指定了歌名、歌手或歌词时，请保留其原意；用户只提出氛围、风格或随机点歌时，"
+            "由你选择符合要求的具体歌曲，再调用此工具。歌曲不可用时可换一首合适的歌，"
+            "不要声称唱了未成功生成的歌曲。\n"
+            "• 服务根据唱段的基频自动选择变调，不按歌手性别判断；用户指定变调时优先使用指定值。\n"
+            "• index_rate 和 protect 可选；不同模型和音源的效果不同，没有统一的曲风参数。\n"
             "  - duration（时长 6~16秒）：连贯大副歌（12~14秒），短精炼一句（8秒）。"
         ),
         parameters=[
             ToolParameterInfo(
                 name="song_or_lyric",
                 param_type=ToolParamType.STRING,
-                description="要演唱的歌曲名或代表歌词（例如：起风了、晴天、七里香、后来、勇气）",
+                description="具体歌名、歌手或完整歌词。用户只指定氛围或风格时，请先选择一首具体歌曲；用户提供歌词时尽量原样保留，不要猜歌名替换歌词。",
                 required=True,
             ),
             ToolParameterInfo(
@@ -440,6 +429,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
         query_text: str,
         custom_params: Optional[Dict[str, Any]] = None,
         is_tool: bool = False,
+        show_song_card: bool = True,
     ) -> Tuple[bool, str]:
         if not self._session or self._session.closed:
             timeout = aiohttp.ClientTimeout(total=self.config.singing.timeout)
@@ -467,7 +457,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
                 if v is not None:
                     params[k] = v
 
-        logger.info("[ElysiaSing] 开始点唱: query='%s', params=%s, stream=%s", query_text, params, stream_id)
+        logger.info("[ElysiaSing] 开始点唱")
         try:
             async with self._session.get(sing_api, params=params, headers=self._headers()) as resp:
                 if resp.status != 200:
@@ -481,6 +471,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
             song_name = data.get("song_name", "未知歌曲")
             artist = data.get("artist", "未知歌手")
             matched_lyric = data.get("matched_lyric", "")
+            selection_notice = data.get("selection_notice", "")
             actual_pitch = data.get("pitch_shift", 0)
             detected_f0 = data.get("detected_f0", 0.0)
             f0_category = data.get("f0_category", "")
@@ -520,6 +511,12 @@ class ElysiaSingPlugin(MaiBotPlugin):
                     await self.ctx.send.text("音频已生成，但语音发送失败，请检查适配器配置。", stream_id)
                 return False, "语音发送失败，请检查适配器配置"
 
+            if selection_notice and not is_tool and show_song_card:
+                try:
+                    await self.ctx.send.text(selection_notice, stream_id)
+                except Exception:
+                    logger.warning("[ElysiaSing] 无法发送版本提示", exc_info=True)
+
             # 仅在发送成功后更新重唱记录。
             saved_params = dict(custom_params or {})
             saved_params["pitch_shift"] = actual_pitch
@@ -527,7 +524,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
             self._last_song[stream_id] = (query_text, saved_params)
 
             # 如果开启了卡片提示且非纯工具调用，发送调音信息卡片
-            if not is_tool and self.config.interaction.send_song_card:
+            if not is_tool and show_song_card and self.config.interaction.send_song_card:
                 pitch_tag = f"+{actual_pitch}" if actual_pitch > 0 else str(actual_pitch)
                 f0_tag = f"，基频探测: {detected_f0}Hz [{f0_category}]" if detected_f0 > 0 else ""
                 text_notice = (
@@ -543,7 +540,7 @@ class ElysiaSingPlugin(MaiBotPlugin):
             self._cleanup_tasks.add(task)
             task.add_done_callback(self._cleanup_tasks.discard)
 
-            return True, f"已用语音为你演唱《{song_name}》中的片段：“{matched_lyric}”"
+            return True, f"已用语音为你演唱《{song_name}》中的片段：“{matched_lyric}”" + (f" {selection_notice}" if selection_notice else "")
 
         except Exception as e:
             logger.exception("[ElysiaSing] 演唱执行异常: %s", e)

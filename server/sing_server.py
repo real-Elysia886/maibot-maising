@@ -216,11 +216,15 @@ def startup_event():
 
 
 def search_song_and_lrc(keyword: str, duration: float = 11.0):
-    print(f"[Music-Search] 正在检索网易云可用音源: '{keyword}' (期望时长: {duration}s)...")
+    print(f"[Music-Search] 正在检索网易云可用音源 (期望时长: {duration}s)...")
     cmd = [NODE_EXE, VIP_SEARCH_SCRIPT, keyword, str(duration)]
     env = os.environ.copy()
     env["NODE_PATH"] = NODE_MODULES
-    res = subprocess.run(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8")
+    try:
+        res = subprocess.run(cmd, env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             text=True, encoding="utf-8", timeout=45)
+    except subprocess.TimeoutExpired as exc:
+        raise ValueError("歌曲搜索服务超时，请稍后重试") from exc
     if res.returncode != 0:
         err = res.stderr or res.stdout
         raise ValueError(f"歌曲检索失败: {err}")
@@ -408,7 +412,7 @@ def api_sing(
     print(
         f"[AI-Singing] 命中歌曲: 《{info['song_name']}》 - {info['artist']} ({info.get('format', 'unknown').upper()}, 码率 {info.get('bitrate', 0)//1000}kbps)"
     )
-    print(f"[AI-Singing] 歌词片段: \"{info['matched_lyric']}\" ({info['start_time']:.2f}s ~ {info['end_time']:.2f}s)")
+    print(f"[AI-Singing] 已定位唱段 ({info['start_time']:.2f}s ~ {info['end_time']:.2f}s)")
 
     # 1. 切片官方母带
     raw_clip = os.path.join(TEMP_DIR, f"master_{info['song_id']}_{int(info['start_time'])}.wav")
@@ -476,6 +480,8 @@ def api_sing(
             "audio_format": info.get("format", "flac"),
             "bitrate": info.get("bitrate", 0),
             "matched_lyric": info["matched_lyric"],
+            "match_type": info.get("match_type", ""),
+            "selection_notice": info.get("selection_notice", ""),
             "duration": round(info["duration"], 2),
             "pitch_shift": pitch_shift,
             "detected_f0": round(detected_f0, 1),

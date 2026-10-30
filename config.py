@@ -131,12 +131,11 @@ class AcousticTuningConfig(PluginConfigBase):
         default=0,
         ge=-12,
         le=12,
-        description="女声歌曲默认变调（半音）",
+        description="高音区默认变调（半音）",
         json_schema_extra={
-            "label": "女声歌曲默认变调（半音数）",
+            "label": "高音区默认变调（半音数）",
             "hint": (
-                "【自然语言说明】：女歌手歌曲（如王菲、梁静茹、孙燕姿）天然处于女声音域，"
-                "默认保持「0」（原调）即可获得最纯正自然、如官方单曲一般的抒情听感。"
+                "自动检测到较高的基频时使用；默认 0 半音。音高不等同于歌手性别。"
             ),
             "placeholder": "0",
         },
@@ -161,7 +160,7 @@ class AcousticTuningConfig(PluginConfigBase):
             "label": "咬字与气声保护 (Protect)",
             "hint": (
                 "【自然语言说明】：保护歌声中的换气呼吸、轻柔气声细节与清辅音拼音开头（b, p, t, k, s 等），"
-                "防止吞字、破音或产生金属哑音。推荐保持 0.40~0.48（默认 0.45）。"
+                "数值越低保护越强，但可能影响音色转换；默认 0.45。"
             ),
             "placeholder": "0.45",
         },
@@ -174,9 +173,7 @@ class AcousticTuningConfig(PluginConfigBase):
         json_schema_extra={
             "label": "音准平滑度 (Filter Radius)",
             "hint": (
-                "【自然语言说明】：对音准曲线进行平滑去噪滤波。"
-                "数值越大（4~7）：走调杂音越少、音准更平稳；"
-                "数值越小（0~3）：越完整保留原唱歌手细微的真假声转换与微颤音。默认 4。"
+                "音高滤波参数；实际效果取决于推理实现和音高提取方式。默认 4。"
             ),
             "placeholder": "4",
         },
@@ -190,7 +187,7 @@ class AcousticTuningConfig(PluginConfigBase):
             "label": "原唱动态融合 (RMS Mix)",
             "hint": (
                 "【自然语言说明】：将原唱的强弱起伏（如主歌轻声细语、副歌深情爆发）与模型音量融合的比例。"
-                "1.0 为完全贴合原唱动态，0.70 为兼顾甜美与动态的柔化平衡点。"
+                "实际效果取决于推理实现；默认 0.70。"
             ),
             "placeholder": "0.70",
         },
@@ -231,7 +228,7 @@ class InteractionConfig(PluginConfigBase):
         description="点歌成功后是否发送调音信息卡片",
         json_schema_extra={
             "label": "发送调音信息卡片",
-            "hint": "默认关闭。开启后，点歌或重唱成功时会额外发送歌名、歌手、变调和相似度等调音信息。",
+            "hint": "默认关闭。开启后，点歌成功时会额外发送歌名、歌手和变调等信息；重唱不发送该卡片。",
         },
     )
     enable_tool_calling: bool = Field(
@@ -248,10 +245,8 @@ class InteractionConfig(PluginConfigBase):
         json_schema_extra={
             "label": "大模型风格参数辅助",
             "hint": (
-                "【物理自适应与风格辅助】：\n"
-                "• 音高变调已全面交由底层 RMVPE 物理基频算法实时自适应对齐（男声自动对齐至专属 +8 黄金区，女声自动保留 0 原调，低女声过渡微调 +3）；\n"
-                "• 关闭（默认推荐）：严格锁定你配置的基准线参数，绝不偏离，听感稳定平衡；\n"
-                "• 开启：麦麦在自主点歌时仅针对歌曲风格微调相似度或咬字保护，单次用完立刻恢复基准。"
+                "默认关闭。开启后，麦麦自主点歌时可提供音色索引和保护参数；"
+                "效果取决于模型和音源。自动变调由推理服务处理，手动指定的变调优先。"
             ),
         },
     )
